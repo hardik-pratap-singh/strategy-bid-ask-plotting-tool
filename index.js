@@ -90,12 +90,24 @@ for (let i = 1; i <= 10; i++) { // this will loop through each and every strateg
             console.log(productElement)
             productElement.value = product
             // console.log(productElement)
-
-            mul.value = mult 
+            // let mult = mul.value ; 
+            if(mult[0] === '+' && mult[1] === '+'){
+                // console.log("ehhllad ")
+                
+                // console.log(mult)
+                let newmul = mult.slice(2)
+                console.log("newmul " , newmul)
+                mul.value = newmul ; 
+            }
+            else{
+                // console.log("heeerrr")
+                mul.value = mult ; 
+            }
+            // mul.value = mult 
             const select = document.createElement('select');
-        
+            console.log(instrumentID)
             select.className = 'form-control'; // Add Bootstrap styling class
-            select.innerHTML = `<option value="">${contract}</option>`; // Default option
+            select.innerHTML = `<option value='${instrumentID}'>${contract}</option>`; // Default option
             // select.value = contract
             
             // Populate the dropdown with instrumentAlias values
