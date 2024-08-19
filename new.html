@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <!-- <script language="JavaScript" src="../lightstreamer.js"></script> -->
+    <script language="JavaScript" src="lightstreamer.js"></script>
+
+    <style>
+        #chart-container {
+            display: flex;
+            justify-content: center;
+            /* align-items: center; */
+            /* text-align: center; */
+        }
+    </style>
+</head>
+
+<body>
+<br><br><br>
+    <div class="container">
+        <button id="headingButton"  type="button" class="btn btn-primary">Home Page</button>
+    </div>
+
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+        .container button{
+            font-size: large;
+        }
+    </style>
+
+    <br><br><br>
+    <div id="chart-container"></div>
+    <script>
+
+        const params = new URLSearchParams(window.location.search);
+        const strategy = params.get("s");
+        const strategyname = params.get("sname");
+        let headingButton = document.querySelector("#headingButton") ;
+        if(strategyname === null){
+            document.title = `Strategy-${strategy}` ; 
+            headingButton.textContent = `Strategy-${strategy}` ; 
+        }
+        else{
+            document.title = strategyname ; 
+            headingButton.textContent = strategyname ; 
+        }
+        
+    
+        // console.log("strategy inside new.html ", strategy);
+
+
+        function backHome() {
+            // window.localStorage.removeItem("details")
+            // window.location.href = "http://localhost:5501/"
+            window.history.back()
+        }
+        let details = JSON.parse(window.localStorage.getItem(`details-${strategy}`))
+        // console.log("details , ", details)
+
+        const mp = new Map();
+        let insString = ""
+        for (let i = 0; i < details.length; i++) {
+            if (details[i][0]) {
+                insString += details[i][0] + ","
+                console.log(details[i][1]);
+                mp.set((details[i][0]), details[i][1])
+            }
+        }
+
+        // console.log([insString])
+        // console.log("mp ", mp)
+        let instruments = [insString];
+        console.log("instruments ", instruments)
+
+
+        // console.log(mp.get("834"))
+        let runningArr = new Array(12).fill(0); //this array will store last bidprice and askprice for particular contract
+        //runningArr[0] = ID1 - BestAsk
+        //runningArr[1] = ID1 - BestBid
+
+        //runningArr[2] = ID2 - BestAsk
+        //runningArr[3] = ID2 - BestBid
+
+        //runningArr[4] = ID3 - BestAsk
+        //runningArr[5] = ID3 - BestBid
+
+        let runningMp = new Map();
+        mp.forEach((value, key) => {
+            runningMp.set(key, new Array(2).fill(0))
+        });
+
+        // console.log("runningMp" , runningMp)
+        // runningMp.forEach((value, key) => {
+        //     console.log("vlaue ", value);
+        // })
+
+        let totalIDs = runningMp.size;
+        let flagMp = new Map();
+
+
+
+        //Charts Code Starts ---------------------------------------------
+        const chart = LightweightCharts.createChart(document.getElementById('chart-container'), { width: 1800, height: 800 });
+        // const chart = LightweightCharts.createChart(document.body, { width: 1800, height: 800 });
+        const lineSeries = chart.addLineSeries({
+            color: 'red', // Set the color of the line
+            lineWidth: 2, // Optional: Set the line width
+        });
+        chart.timeScale().applyOptions({
+            timeVisible: true,
+            secondsVisible: true
+        });
+        const lineSeries1 = chart.addLineSeries();
+        chart.timeScale().applyOptions({
+            timeVisible: true,
+            secondsVisible: true
+        });
+        const data1 = [];
+        const data2 = [];
+        //Charts Code Ends ----------------------------
+
+
+        function init(instruments) {
+            // let instruments = ["7371323709053504423,10459194478770183901,"]
+            // let instruments = ["10459194478770183901,574848598602402396,"]
+            // let instruments = ["7371323709053504423,"]
+            // console.log("inside init", instruments)
+            var client;
+
+            const fields = ["key", "ExchangeRecvTime", "BestAsk", "BestAskQty", "BestBid", "BestBidQty"]
+            client = new LightstreamerClient("https://ls-md.corp.hertshtengroup.com", "TTsdkLSAdapter");
+            client.connectionOptions.setReconnectTimeout(2500);
+            var subscription = new Subscription("DISTINCT", instruments, fields);
+            subscription.addListener({
+                onItemUpdate: function (obj) {
+                    let values = obj.updateValues;
+                    // console.log(values)
+
+
+                    // Extract the necessary value from the update
+                    // const timestamp = Math.floor((parseFloat(values[3]))/1000); // Convert to UNIX timestamp
+                    const currentTime = new Date();
+                    const timestampMillis = currentTime.getTime() / 1000;
+                    const londonTime = currentTime.toLocaleString('en-GB', { timeZone: 'Europe/London' });
+                    // console.log(timestampMillis)
+                    const bestAsk = parseFloat(values[4]); // Or another relevant field
+                    const bestBid = parseFloat(values[6]); // Or another relevant field
+                    //here we've got bestAsk and bestBid for some instrumentID 
+                    //let's say we have a strategy with 3 instrument IDs
+
+                    //we've got an update 
+                    let currentId = values[2];
+                    flagMp.set(currentId, '1');
+
+
+                    // if(runningMp.has(currentId)){
+                    runningMp.set(currentId, [bestAsk, bestBid]);
+                    // console.log(runningMp)
+                    let bidOfStructure = 0;
+                    let askOfStructure = 0;
+
+                    // console.log(values)
+                    // console.log("bestAsk " , runningMp.get(currentId)[0] , "bestBid " , runningMp.get(currentId)[1])
+                    // console.log("came here 3")
+
+                    runningMp.forEach((value, key) => {
+                        if (mp.get(key)[0] === "+") {
+                            let mult = mp.get(key);
+                            let mul = mult.slice(1);
+                            let operand = parseFloat(mul)
+                            bidOfStructure = bidOfStructure + (value[1] * operand);
+                            askOfStructure = askOfStructure + (value[0] * operand);
+                        }
+                        else {
+                            let mult = mp.get(key);
+                            let mul = mult.slice(1);
+                            let operand = parseFloat(mul)
+                            bidOfStructure = bidOfStructure + (value[0] * operand * -1);
+                            askOfStructure = askOfStructure + (value[1] * operand * -1);
+                        }
+                    });
+                    // console.log(runningMp)
+
+                    console.log("bidStructure ", bidOfStructure, " askOfStructure ", askOfStructure);
+
+
+
+                    // if (!timestamp || !newValue) {
+                    //     console.log("Invalid data received:", values);
+                    //     return;
+                    // }
+                    // const tdata = {
+                    //     x: timestampMillis,
+                    //     y: value
+                    // };
+                    // console.log(tdata)
+
+                    if (flagMp.size === totalIDs) {
+                        // data1.push({ time: londonTime, value: askOfStructure });
+                        // data2.push({ time: londonTime, value: bidOfStructure });
+
+                        data1.push({ time: timestampMillis, value: askOfStructure });
+                        data2.push({ time: timestampMillis, value: bidOfStructure });
+                        // console.log({ time: timestampMillis, value: bidOfStructure })
+                        // console.log(object)
+
+                        lineSeries.setData(data1);
+                        lineSeries1.setData(data2);
+                    }
+
+                }
+            });
+            subscription.setDataAdapter("HGL1_Adapter");
+            subscription.setRequestedSnapshot("no")
+            subscription.setRequestedMaxFrequency(1)
+            client.subscribe(subscription);
+            client.connect();
+        }
+        init(instruments);
+
+    </script>
+
+    <!-- 
+    <div class="container">
+        <button onclick="backHome()" type="button" class="btn btn-primary">Home Page</button>
+    </div>
+
+    <style>
+        .container{
+            display: flex;
+            justify-content: center;
+        }
+    </style> -->
+
+
+</body>
+
+</html>
