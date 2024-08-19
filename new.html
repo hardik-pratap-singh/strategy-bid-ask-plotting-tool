@@ -73,9 +73,9 @@
         let insString = ""
         for (let i = 0; i < details.length; i++) {
             if (details[i][0]) {
-                insString += details[i][0] + ","
-                console.log(details[i][1]);
-                mp.set((details[i][0]), details[i][1])
+                insString += details[i][4] + ","
+                // console.log(details[i][4]);
+                mp.set((details[i][4]), details[i][5])
             }
         }
 

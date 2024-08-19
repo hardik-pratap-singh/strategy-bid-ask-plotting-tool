@@ -35,19 +35,25 @@ function getStrategicalData(strategy) {
     for (let j = 0; j < 6; j++) {
         let ID = document.querySelector(`.strategy-${strategy}-ID-${j + 1} form select`)
         let mul = document.querySelector(`.strategy-${strategy}-M-${j + 1} input`)
+        let product = document.querySelector(`.strategy-${strategy}-ID-${j + 1} form input`)
         // console.log(ID.value)
         // console.log("mul " , mul.value)
         // console.log(ID) ; 
         // console.log(mul)
+
         if(ID && mul.value){
             let mulval = mul.value ; 
+            let pr = product.value 
+            const selectedOption = ID.options[ID.selectedIndex];
+            const contract = selectedOption.text;
+            // let allContracts = 
             if(mulval[0] === '-'){
-                strategydetails.push([ID.value ? ID.value : null, mul.value ? mul.value : null])
+                strategydetails.push([ strategy , j + 1 , pr , contract , ID.value, mul.value])
             }
             else{
                 let finalmul = "+" + mulval ; 
                 console.log("Final mul  " , finalmul)
-                strategydetails.push([ID.value ? ID.value : null, mul.value ? finalmul : null])
+                strategydetails.push([ strategy , j + 1 , pr , contract , ID.value, finalmul])
             }
         }
 

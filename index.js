@@ -4,8 +4,8 @@ thead[0].style.textAlign = "center"
 for (let i = 1; i < thead.length; i++) {
     if (i % 2 !== 0) {
         // console.log(thead[i])
-        let j = Math.floor(i / 2) ; 
-        j++ ; 
+        let j = Math.floor(i / 2);
+        j++;
         thead[i].innerHTML = `&nbsp;&nbsp;&nbsp;Contract ${j}`
     }
     else {
@@ -25,7 +25,7 @@ for (let i = 0; i < 10; i++) {
     tr.classList.add(`strategy-${i + 1}`)
     let th = document.createElement("th");
     th.setAttribute("scope", "row");
-    th.innerHTML = `<input type="text" class="form-control w-100" placeholder='Strategy ${i+1}' aria-label="Username" aria-describedby="basic-addon1">`; // Set the content of <th>
+    th.innerHTML = `<input type="text" class="form-control w-100" placeholder='Strategy ${i + 1}' aria-label="Username" aria-describedby="basic-addon1">`; // Set the content of <th>
     // th.style.textAlign = "center"
     tr.appendChild(th);
 
@@ -33,7 +33,7 @@ for (let i = 0; i < 10; i++) {
         // Create and append ID cell
         let id = document.createElement("td");
         id.classList.add(`strategy-${i + 1}-ID-${j + 1}`);
-        id.innerHTML = `<form class="d-flex" role="search" onsubmit="getContracts(event)" >
+        id.innerHTML = `<form class="d-flex" role="search" onsubmit="getContracts(event , ${i + 1} , ${j + 1})" >
                             <input type="text" class="form-control w-50" placeholder="Product" aria-label="Username" aria-describedby="basic-addon1">
                             <button class="btn btn-outline-success" type="submit">Go</button>
                         </form>`;
@@ -66,8 +66,50 @@ for (let i = 0; i < 10; i++) {
 }
 
 
+//filling the cached values present in the localstorage 
+//First I will check which strategies are present in the localstorage beforehand 
+for (let i = 1; i <= 10; i++) { // this will loop through each and every strategy
+    if (window.localStorage.getItem(`details-${i}`)) {
+        //since details-${i} is present, that means somebody has already set something related to it
+        //and we have all the information related to that
+        let details = JSON.parse(window.localStorage.getItem(`details-${i}`))
+        console.log(typeof (details))
+        console.log(details)
+        for (let j = 0; j < details.length; j++) {
+            let row = details[j][0];
+            let col = details[j][1];
+            let product = details[j][2];
+            let contract = details[j][3];
+            let instrumentID = details[j][4];
+            let mult = details[j][5];
+            console.log(row)
+            console.log(col)
+            let form = document.querySelector(`.strategy-${row}-ID-${col} form`)
+            let productElement = document.querySelector(`.strategy-${row}-ID-${col} form input`)
+            let mul = document.querySelector(`.strategy-${row}-M-${col} input`)
+            console.log(productElement)
+            productElement.value = product
+            // console.log(productElement)
 
-function getContracts(event) {
+            mul.value = mult 
+            const select = document.createElement('select');
+        
+            select.className = 'form-control'; // Add Bootstrap styling class
+            select.innerHTML = `<option value="">${contract}</option>`; // Default option
+            // select.value = contract
+            
+            // Populate the dropdown with instrumentAlias values
+
+        
+            // Insert the dropdown below the input field
+            form.appendChild(select);
+
+        }
+    }
+}
+
+
+function getContracts(event, strategy, contract) {
     event.preventDefault();
     // console.log(event)
 
@@ -77,6 +119,7 @@ function getContracts(event) {
     // Retrieve the input values from the form
     const idInput = form.querySelector('input[type="text"]');
     const idValue = idInput.value;
+
 
     //Here get all the contracts for the given product....
     //i.e. we have to make an API call here...
