@@ -47,7 +47,7 @@ function getStrategicalData(strategy) {
             const selectedOption = ID.options[ID.selectedIndex];
             const contract = selectedOption.text;
             // let allContracts = 
-            if(mulval[0] === '-'){
+            if(mulval[0] === '-' || mulval[0] === '+'){
                 strategydetails.push([ strategy , j + 1 , pr , contract , ID.value, mul.value])
             }
             else{
@@ -56,8 +56,6 @@ function getStrategicalData(strategy) {
                 strategydetails.push([ strategy , j + 1 , pr , contract , ID.value, finalmul])
             }
         }
-
-
         // strategydetails.push([ID ? ID.value : null, mul ? mul.value : null])
     }
    
@@ -69,6 +67,15 @@ function genGraph(strategy) {
     // First arrange all the entries in their strategy form along with instrumentID's and multipliers 
     let strategydetails = getStrategicalData(strategy);
     window.localStorage.setItem(`details-${strategy}`, JSON.stringify(strategydetails))
+    //Also need to store the strategy names 
+    let strategyName = document.querySelector(`.strategy-${strategy} th input`)
+    if(strategyName.value !== ''){
+        window.localStorage.setItem(`strategyName-${strategy}` , strategyName.value) ; 
+    }
+    else{
+        window.localStorage.removeItem(`strategyName-${strategy}`)
+    }
+
     // window.localStorage.setItem("details", JSON.stringify(strategydetails))
     // window.localStorage.setItem("ID", "hardik")
     // console.log(strategydetails)

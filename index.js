@@ -73,6 +73,13 @@ for (let i = 1; i <= 10; i++) { // this will loop through each and every strateg
         //since details-${i} is present, that means somebody has already set something related to it
         //and we have all the information related to that
         let details = JSON.parse(window.localStorage.getItem(`details-${i}`))
+        let strategyName = window.localStorage.getItem(`strategyName-${i}`)
+        console.log("strategy , " , strategyName)
+        let strategySelector = document.querySelector(`.strategy-${i} th input`)
+        console.log(strategySelector)
+        if(strategyName){
+            strategySelector.value = strategyName ; 
+        }
         console.log(typeof (details))
         console.log(details)
         for (let j = 0; j < details.length; j++) {

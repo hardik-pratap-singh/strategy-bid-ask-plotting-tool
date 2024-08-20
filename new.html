@@ -25,39 +25,56 @@
 </head>
 
 <body>
-<br><br><br>
-    <div class="container">
-        <button id="headingButton"  type="button" class="btn btn-primary">Home Page</button>
+    <br>
+    <div class="info">
+        <div class="container">
+            <button id="headingButton" type="button" class="btn btn-primary">Home Page</button>
+        </div>
+        <div class="left ms-4">
+            <table class="table w-25">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Contract</th>
+                        <th scope="col">Multiplier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
+
 
     <style>
         .container {
             display: flex;
             justify-content: center;
         }
-        .container button{
+
+        .container button {
             font-size: large;
         }
     </style>
 
-    <br><br><br>
+    <br>
     <div id="chart-container"></div>
     <script>
 
         const params = new URLSearchParams(window.location.search);
         const strategy = params.get("s");
         const strategyname = params.get("sname");
-        let headingButton = document.querySelector("#headingButton") ;
-        if(strategyname === null){
-            document.title = `Strategy-${strategy}` ; 
-            headingButton.textContent = `Strategy-${strategy}` ; 
+        let headingButton = document.querySelector("#headingButton");
+        if (strategyname === null) {
+            document.title = `Strategy-${strategy}`;
+            headingButton.textContent = `Strategy-${strategy}`;
         }
-        else{
-            document.title = strategyname ; 
-            headingButton.textContent = strategyname ; 
+        else {
+            document.title = strategyname;
+            headingButton.textContent = `Strategy : ${strategyname}`;
         }
-        
-    
+
+
         // console.log("strategy inside new.html ", strategy);
 
 
@@ -68,6 +85,24 @@
         }
         let details = JSON.parse(window.localStorage.getItem(`details-${strategy}`))
         // console.log("details , ", details)
+        let tbody = document.querySelector("tbody")
+        for(let i = 0 ; i < details.length ; i++){
+            let tr = document.createElement("tr"); 
+            // <th scope="row">1</th>
+            let th = document.createElement("th");
+            th.setAttribute("scope" , "row")
+            th.textContent = `${i + 1}`
+            let td1 = document.createElement("td") ; 
+            td1.textContent = details[i][3] ; 
+            let td2 = document.createElement("td") ; 
+            td2.textContent = details[i][5] ; 
+            tr.appendChild(th); 
+            tr.appendChild(td1) ; 
+            tr.appendChild(td2) ; 
+
+            tbody.appendChild(tr)
+
+        }
 
         const mp = new Map();
         let insString = ""
@@ -109,10 +144,8 @@
         let totalIDs = runningMp.size;
         let flagMp = new Map();
 
-
-
         //Charts Code Starts ---------------------------------------------
-        const chart = LightweightCharts.createChart(document.getElementById('chart-container'), { width: 1800, height: 800 });
+        const chart = LightweightCharts.createChart(document.getElementById('chart-container'), { width: 1600, height: 700 });
         // const chart = LightweightCharts.createChart(document.body, { width: 1800, height: 800 });
         const lineSeries = chart.addLineSeries({
             color: 'red', // Set the color of the line
@@ -224,7 +257,7 @@
             });
             subscription.setDataAdapter("HGL1_Adapter");
             subscription.setRequestedSnapshot("no")
-            subscription.setRequestedMaxFrequency(1)
+            // subscription.setRequestedMaxFrequency(1)
             client.subscribe(subscription);
             client.connect();
         }
